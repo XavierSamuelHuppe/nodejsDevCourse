@@ -87,6 +87,8 @@ usefull modules:
   supertest
   //mocks dependency injection for tests
   rewire
+  //self-explanatory
+  mongodb
 
 JAVASCRIPT REMINDERS:
   //global accessible variable (vs document and window in browser)
@@ -100,8 +102,9 @@ JAVASCRIPT REMINDERS:
 
   //EC6 features
   //http://es6-features.org/
-  //EC5
-  var add = function (a, b) {return a+b}
+  //object deconstruction
+  var user = {name:"Xavier", age: 24}
+  var {name} = user //{name:"Xavier"}
   //arrow function
   var add = (a,b) => {return a+b}
   //if only one line inside, can also do that without typing return
@@ -278,8 +281,71 @@ TESTING REST API
         .end(done)
     })
 
+MONGO DB
+  //vocabulary
+    SQL         NOSQL
+    table       collection
+    row         document
+    column      field
+  //Useful
+  _id //is created by the database unless we specify one
+  _id.getTimeStamp() //gives time when document was created
 
+  //setup it
+  ~/dev/mongo-data //<--- new folder to hold data
+  ~/dev/mongo/bin //<--- inside installation folder
+    ./mongod --dbpath ~/dev/mongo-data //<--- start server
+  //use it in mongo cli
+    ./mongo
+      db.Todos.insert({text:'Be happy'})
+      db.Todos.find()
+  //use it in node
+  const {MongoClient, ObjectID} = require('mongodb') //obj deconstruction
 
+  MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => {
+    if(err){
+      return console.log('Unable to connect to MongoDB server')
+    }
+    console.log('Connected to MongoDB server')
+
+    db.collection('Todos').insertOne({
+      text: 'Something to do',
+      completed: false
+    }, (err, result) => {
+      if(err){
+        return console.log('Unable to insert todo', err)
+      }
+      console.log(JSON.stringify(result.ops, undefined, 2))
+    })
+
+    db.close()
+  })
+  //find return a cursor
+  //a cursor as a lot of functions including toArray
+  //toArray returns a promise
+  db.collection('Todos').find().toArray().then((docs) => {
+    console.log('Todos')
+    console.log(JSON.stringify(docs, undefined, 2))
+  }, (err) => {
+    console.log('Unable to fetch todos')
+  })
+  //find with filters
+  db.collection('Todos').find({completed: false}).toArray().then((docs) => {...}
+  //tricks with ObjectID
+  db.collection('Todos').find({_id: new ObjectID('5a4097f1fbe292b3322fa9e5')}).toArray().then((docs) => {... }
+  //delete
+  //deleteMany
+  db.collection('Todos').deleteMany({text:"eat lunch"}).then((result) => {
+    console.log(result)
+  })
+  //deleteOne
+  db.collection('Todos').deleteOne({text:"eat lunch"}).then((result) => {
+    console.log(result)
+  })
+  //findOneAndDelete
+  db.collection('Todos').findOneAndDelete({text:"eat lunch"}).then((result) => {
+    console.log(result)
+  })
 
 
 
