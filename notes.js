@@ -6,6 +6,8 @@ node:
   nodemon app.js
     //flag to say what we want to watch
     nodemon server.js -e js,hbs
+    //flag to say we're executing a command, not necessarily a node file
+    -x "npm test"
   //start app with debugger
   node inspect app.js
     //continue (resume)
@@ -41,16 +43,50 @@ usefull modules:
   axios
   //web server
   express
+    //classic route
+    app.get('/', (req, res) => {
+      res.send("Hello world")
+    })
+    app.get('/', (req, res) => {
+      res.status(200).json({name: "Xavier"})
+    })
+    //middlewire function
+    app.use((req, res, next) => {
+      var now = new Date().toString()
+      var log = `${req.method} call to ${req.originalUrl} at ${now}`
+      console.log(log)
+      fs.appendFile('server.log', log + "\n", (err) => {
+        if(err){
+          console.log('Unable to append to log file')
+        }
+      })
+      next()
+    })
+    //set a folder to serve static stuff
+    app.use(express.static(__dirname + "/public"))
     //template engine (handlebar)
     hbs
       //set hbs
       const hbs = require('hbs')
       var app = express()
+      hbs.registerPartials(__dirname + "/views/partials")
       app.set('view engine', 'hbs')
       //use it, have about.hbs in ./views
       app.get('/about', (req, res) => {
         res.render('about.hbs')
       })
+
+  //Mocha test framework
+  mocha
+  //expect assertions library
+  //https://github.com/mjackson/expect
+  //also contains spies
+  expect
+  //test framework for REST API
+  //(imported as request)
+  supertest
+  //mocks dependency injection for tests
+  rewire
 
 JAVASCRIPT REMINDERS:
   //global accessible variable (vs document and window in browser)
@@ -125,3 +161,132 @@ JAVASCRIPT REMINDERS:
   }
   user.sayHi() //Output "Hi. I'm undefined"
   user.sayHiAlt() //Output "Hi. I'm Xavier"
+
+TESTING WITH MOCHA AND EXPECT
+  //cool scripts
+  //test is npm known. "npm test" works
+  //test-watch is not, must use "npm run test"
+  //create files with test.js extensions for mocha to pick up (or any)
+  "scripts": {
+    "test": "mocha **/*.test.js",
+    "test-watch": "nodemon -x 'npm test'"
+  }
+
+  //describe() and it()
+  describe('Utils', () => {
+    describe('add', () => {
+      it('should add two numbers', () => {
+        ...
+      })
+    })
+    describe('square', () => {
+      it('should square a numbers', () => {
+        ...
+      })
+    })
+  })
+
+  //test examples
+  module.exports.add = (a, b) => a + b //in imported utils.js file
+  it('should add two numbers', () => {
+    var res = utils.add(33, 11)
+    expect(res).toBe(44).toBeA('number')
+  })
+  it('object tests', () => {
+    expect({name:"Xavier"}).toBe({name:"Xavier"}) //NOT GOOD for object
+    expect({name:"Xavier"}).toEqual({name:"Xavier"}) //GOOD for object
+    expect({name: "Xavier", age: "24"}).toInclude({age: 24}) //green
+    expect({name: "Xavier", age: "24"}).toInclude({age: 23}) //red
+  })
+  //async testing
+  //use done() passed as argument to mocha to tell when you're done
+  module.exports.asyncAdd = (a, b, callback) => {
+    setTimeout(() => {
+      callback(a+b)}
+      , 1000)
+  }
+  it('asyncAdd should add two numbers', (done) => {
+    utils.asyncAdd(4,3, (sum) => {
+      expect(sum).toBeA('number').toBe(7)
+      done()
+    })
+  })
+
+  //spies
+  describe('App', () => {
+    it('should call the spy correctly', () => {
+      var spy = expect.createSpy()
+      spy('Xavier', 25)
+      expect(spy).toHaveBeenCalled()
+      expect(spy).toHaveBeenCalledWith("Xavier", 25)
+    })
+  })
+  //rewire
+  const rewire = require('rewire')
+  var app = rewire('./app')
+  describe('App', () => {
+    var db = {
+      saveUser: expect.createSpy()
+    }
+    app.__set__('db', db) //<--- this is a dependency of app.js (require db...)
+    it('should call saveUser with user object', () => {
+      var email = 'anEmail@someMail.com'
+      var password = 'aPass'
+      app.handleSignup(email,password)
+      expect(db.saveUser).toHaveBeenCalledWith({
+        email,
+        password
+      })
+    })
+  })
+
+
+TESTING REST API
+  //easy example
+  //server.js
+    const express = require('express')
+    var app = express()
+    app.get('/', (req, res) => {
+      res.send("Hello world")
+    })
+    app.listen(3000)
+    module.exports.app = app // <--- must export app
+  //server.test.js
+    const request = require('supertest') // <---require supertest
+    const app = require('./server').app
+    it('should return hello world response', (done) => {
+      request(app)
+        .get('/')
+        .expect(200)
+        .expect('Hello world')
+        .end(done)
+    })
+
+  //pipe in to expect framework to have more grip
+  //for route
+    app.get('/obj', (req, res) => {
+      res.status(200).send({name: "Xavier"})
+    })
+  //test
+    it('pipe in to expect framework', (done) => {
+      request(app)
+        .get('/obj')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual({name: "Xavier"}) //<--- actual expect framework (const expect = require('expect'))
+        })
+        .end(done)
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+  .
