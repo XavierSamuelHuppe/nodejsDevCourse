@@ -41,6 +41,10 @@ usefull modules:
   request
   //make HTTP request, with promises!
   axios
+  //body parser for express
+  body-parser
+    const bodyParser = require('body-parser')
+    app.use(bodyParser.json())
   //web server
   express
     //classic route
@@ -89,6 +93,8 @@ usefull modules:
   rewire
   //self-explanatory
   mongodb
+  //schemas for MongoDB
+  mongoose
 
 JAVASCRIPT REMINDERS:
   //global accessible variable (vs document and window in browser)
@@ -347,6 +353,29 @@ MONGO DB
     console.log(result)
   })
 
+MONGOOSE
+  //Validators
+  //http://mongoosejs.com/docs/validation.html
+  const mongoose = require('mongoose')
+
+  mongoose.Promise = global.Promise
+  mongoose.connect('mongodb://localhost:27017/TodoApp')
+
+  var Todo = mongoose.model('Todo', { //<--- model creation
+    text: {
+      type: 'string',
+      required: true,
+      minlength: 1,
+      trim: true //<--- trim spaces!
+    },
+    completed: {
+      type: Boolean,
+      default: false
+    },
+    completedAt: {
+      type: Number
+    }
+  })
 
 
 
