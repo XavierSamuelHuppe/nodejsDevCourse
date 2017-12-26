@@ -54,6 +54,17 @@ usefull modules:
     app.get('/', (req, res) => {
       res.status(200).json({name: "Xavier"})
     })
+    app.get('/todos/:id', (req, res) => {
+      var id = req.params["id"]
+      if(!ObjectID.isValid(id)){
+        return res.status(404).send()
+      }
+      Todo.findById(id).then(todo => {
+        res.status(200).send(todo)
+      }, e => {
+        res.status(400).send()
+      })
+    })
     //middlewire function
     app.use((req, res, next) => {
       var now = new Date().toString()
