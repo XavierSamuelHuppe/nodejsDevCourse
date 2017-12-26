@@ -391,6 +391,8 @@ MONGO DB
   db.collection('Todos').find({completed: false}).toArray().then((docs) => {...}
   //tricks with ObjectID
   db.collection('Todos').find({_id: new ObjectID('5a4097f1fbe292b3322fa9e5')}).toArray().then((docs) => {... }
+  //convert ObjectID to string
+  _id.toHexString()
   //delete
   //deleteMany
   db.collection('Todos').deleteMany({text:"eat lunch"}).then((result) => {

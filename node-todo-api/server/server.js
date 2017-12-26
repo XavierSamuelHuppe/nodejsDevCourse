@@ -35,9 +35,12 @@ app.get('/todos/:id', (req, res) => {
     return res.status(404).send()
   }
   Todo.findById(id).then(todo => {
-    res.status(200).send(todo)
+    if(!todo){
+      return res.status(404).send()
+    }
+    res.status(200).send({todo})
   }, e => {
-    res.status(400).send()
+    res.status(404).send()
   })
 })
 
