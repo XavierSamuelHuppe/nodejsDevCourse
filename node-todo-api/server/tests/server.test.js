@@ -8,7 +8,8 @@ const {Todo} = require('./../models/todo')
 const todos = [
   {
     _id: new ObjectID(),
-    text: "First todo"
+    text: "First todo",
+    completed: false
   },
   {
     _id: new ObjectID(),
@@ -142,5 +143,39 @@ describe('DELETE /todos/:id', () => {
       .delete(`/todos/${nonObjectId}`)
       .expect(404)
       .end(done)
+  })
+})
+
+describe('PATCH /todos/:id', () => {
+  it('should update correct todo', (done) => {
+    var idToUpdate = todos[0]._id.toHexString()
+    var updatedTodo = {
+      text: "This is updated",
+      completed: true
+    }
+
+    request(app)
+      .patch(`/todos/${idToUpdate}`)
+      .send(updatedTodo)
+      .expect(200)
+      .expect(res => {
+        expect(res.body.todo.text).toBe(updatedTodo.text)
+        expect(res.body.todo.completed).toBe(updatedTodo.completed)
+        expect(typeof res.body.todo.completedAt).toBe('number')
+      })
+      .end((err,res) => {
+        if(err){
+          return done(err)
+        }
+        Todo.count().then((res) => {
+          expect(res).toBe(2)
+          return Todo.findById(idToUpdate)
+        }).then((res) => {
+          var {text,completed} = res
+          expect({text,completed}).toEqual(updatedTodo)
+          done()
+        })
+        .catch(e => done(e))
+      })
   })
 })
