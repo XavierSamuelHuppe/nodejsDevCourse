@@ -105,3 +105,42 @@ describe('GET /todos/:id', () => {
       .end(done)
   })
 })
+
+describe('DELETE /todos/:id', () => {
+  it('should remove the correct todo', (done) => {
+    var idToRemove = todos[0]._id.toHexString()
+    request(app)
+      .delete(`/todos/${idToRemove}`)
+      .expect(200)
+      .expect(res => {
+        expect(res.body.todo.text).toEqual(todos[0].text)
+      })
+      .end((err,res) => {
+        if(err){
+          return done(err)
+        }
+        Todo.count().then((res) => {
+          expect(res).toBe(1)
+          return Todo.findById(idToRemove)
+        }).then((res) => {
+          expect(res).toBe(null)
+          done()
+        })
+        .catch(e => done(e))
+      })
+  })
+  it('should return 404 if todo not found', (done) => {
+    var idNotInDb = new ObjectID()
+    request(app)
+      .delete(`/todos/${idNotInDb}`)
+      .expect(404)
+      .end(done)
+  })
+  it('should return 404 for not object id', (done) => {
+    var nonObjectId = 123
+    request(app)
+      .delete(`/todos/${nonObjectId}`)
+      .expect(404)
+      .end(done)
+  })
+})
