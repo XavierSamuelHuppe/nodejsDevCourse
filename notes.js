@@ -107,7 +107,9 @@ usefull modules:
   //schemas for MongoDB
   mongoose
 
-JAVASCRIPT REMINDERS:
+
+
+JAVASCRIPT && NODE:
   //global accessible variable (vs document and window in browser)
   global, process, module
 
@@ -146,7 +148,7 @@ JAVASCRIPT REMINDERS:
   }).catch(() => {
     console.log("Something in the chain went wrong")
   })
-  
+
   //Good example of chaining promises
   const {ObjectID} = require('mongodb');
 
@@ -220,9 +222,17 @@ TESTING WITH MOCHA AND EXPECT
   //test-watch is not, must use "npm run test"
   //create files with test.js extensions for mocha to pick up (or any)
   "scripts": {
+    "start": "node server/server.js",
     "test": "mocha **/*.test.js",
     "test-watch": "nodemon -x 'npm test'"
   }
+
+  //scripts with env props
+  "scripts": {
+    "test": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha **/*.test.js"
+  }
+  //with env in server.js
+  var env = process.env.NODE_ENV
 
   //describe() and it()
   describe('Utils', () => {
