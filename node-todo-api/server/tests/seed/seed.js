@@ -36,11 +36,13 @@ const todos = [
   {
     _id: new ObjectID(),
     text: "First todo",
-    completed: false
+    completed: false,
+    _creator: userOneId
   },
   {
     _id: new ObjectID(),
-    text: "second todo"
+    text: "second todo",
+    _creator: userTwoId
   }
 ]
 
