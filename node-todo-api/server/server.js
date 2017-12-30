@@ -42,18 +42,14 @@ app.post('/users/login', (req, res) => {
   }).catch(e => {
     res.status(400).send()
   })
+})
 
-  // User.findOne({email:body.email}).then(user => {
-  //   return bcrypt.compare(body.password, user.password)
-  // }).then((response)=> {
-  //   if(response){
-  //     res.status(200).send(user)
-  //   }else{
-  //     res.status(401).send({})
-  //   }
-  // }).catch(e => {
-  //   res.status(401).send(e)
-  // })
+app.delete('/users/me/token', authenticate, (req, res) => {
+  req.user.removeToken(req.token).then(() => {
+    res.status(200).send()
+  }, () => {
+    res.status(400).send()
+  })
 })
 
 app.post('/todos', (req, res) => {
