@@ -1,4 +1,5 @@
 const {SHA256} = require('crypto-js')
+const bcrypt = require('bcryptjs')
 
 //example of hash
 var message = "I am user number 3"
