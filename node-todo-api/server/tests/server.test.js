@@ -213,7 +213,7 @@ describe('POST /users', () => {
           expect(user).toBeDefined()
           expect(user.password).not.toBe(password)
           done()
-        })
+        }).catch(e => done(e))
       })
   })
 
@@ -244,6 +244,64 @@ describe('POST /users', () => {
           done()
         })
       })
+  })
+})
+
+describe('POST /users/login', () =>{
+
+  it('should login user and return auth token', (done) =>{
+    var {email, password} = users[0]
+    request(app)
+      .post('/users/login')
+      .send({email, password})
+      .expect(200)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toBeDefined()
+      }).end((err, res) => {
+        if(err){
+          return done(err)
+        }
+
+        User.findById(users[0]._id).then(user => {
+          var {access, token} = user.tokens[1]
+          expect({access, token}).toEqual({
+            access: 'auth',
+            token: res.headers['x-auth']
+          })
+          done()
+        }).catch(e => done(e))
+      })
+  })
+
+  it('should reject login for non existant email', (done) =>{
+    var aNonExistingEmail = "unfindableEmail@carrot.vn"
+    request(app)
+      .post('/users/login')
+      .send({email: aNonExistingEmail, password : "123abc!"})
+      .expect(400)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toBeFalsy()
+      }).end((err, res) => {
+        if(err){
+          return done(err)
+        }
+
+        User.findById(users[0]._id).then(user => {
+          expect(user.tokens.length).toBe(1)
+          done()
+        }).catch(e => done(e))
+      })
+  })
+
+  it('should reject login for bad password', (done) =>{
+    var {email} = users[0]
+    request(app)
+      .post('/users/login')
+      .send({email, password : "wrong"})
+      .expect(400)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toBeFalsy()
+      }).end(done)
   })
 })
 

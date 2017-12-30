@@ -26,7 +26,6 @@ app.post('/users', (req, res) => {
   newUser.save().then(() => {
     return newUser.generateAuthToken()
   }).then((token) => {
-    console.log("token\n", token)
     res.header('x-auth', token).send(newUser)
   }).catch((e) => {
     res.status(400).send(e)
