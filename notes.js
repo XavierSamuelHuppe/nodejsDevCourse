@@ -219,7 +219,7 @@ JAVASCRIPT && NODE:
 TESTING WITH MOCHA AND EXPECT
   //cool scripts
   //test is npm known. "npm test" works
-  //test-watch is not, must use "npm run test"
+  //test-watch is not, must use "npm run test-watch"
   //create files with test.js extensions for mocha to pick up (or any)
   "scripts": {
     "start": "node server/server.js",
@@ -473,11 +473,61 @@ MONGOOSE
     }
   })
 
+SOCKET IO
+  //package
+    npm i socket.io --save
+  //configure with express
+    const http = require('http')
+    const express = require('express');
+    const socketIO = require('socket.io');
+    var app = express()
+    var server = http.createServer(app)
+    var io = socketIO(server)
+    //...
+    server.listen(3000, () => {
+      console.log(`Started server on port 3000`)
+    })
+  //usage on the server
+    io.on('connection', (socket) => { //connection = event
+      socket.emit('newMessage', { //this socket = one user
+        from: 'Admin',
+        text: 'Welcome to the chat room.',
+        createdAt: new Date().getTime ()
+      })
+      socket.broadcast.emit('newMessage', { //broadcast = everyone but this socket
+        from: 'Admin',
+        text: 'New user joined the chat room ',
+        createdAt: new Date().getTime ()
+      })
 
+      socket.on('createMessage', (message) => { //listening to createMessage event
+        socket.broadcast.emit('newMessage', { //broadcast = everyone but this socket
+          from: message.from,
+          text: message.text,
+          createdAt: new Date().getTime ()
+        })
+        io.emit('newMessage', { //io.emit = to everyone on my io
+          from: message.from,
+          text: message.text,
+          createdAt: new Date().getTime()
+        })
+      })
 
+      socket.on('disconnect', () => {
+        console.log('User disconnect from server')
+      })
+    })
+  //usage on the client
+    var socket = io();
 
+    socket.on('connect', function() {
+      console.log('Connected to server')
+    })
 
+    socket.on('disconnect', function() {
+      console.log('Disconnected from server')
+    })
 
-
-
-  .
+    socket.on('newMessage', function(message) {
+      console.log('new message received', message)
+    })
